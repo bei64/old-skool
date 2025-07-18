@@ -1,0 +1,13 @@
+{
+    "name": "bei-spiral",
+    "description": "Project old-skool (Workspace)",
+    "toolkit": "kick",
+    "sources": [
+        "src/bei-spiral.asm"
+    ],
+    "build": "debug",
+    "definitions": [],
+    "includes": [],
+    "args": [],
+    "compiler": ""
+}
