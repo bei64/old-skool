@@ -3,7 +3,7 @@
     "description": "Project old-skool (Workspace)",
     "toolkit": "kick",
     "sources": [
-        "src/bei-spiral.asm"
+        "src/bei-osk.asm"
     ],
     "build": "debug",
     "definitions": [],
