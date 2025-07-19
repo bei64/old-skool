@@ -30,30 +30,20 @@ Start:
     lda $01
     and #%11111011    
     sta $01
-    ldx #0
-CopyO:
+    
+    ldx #8
+Copy:
     lda $D000 + $0F * 8,x
     sta O,x
-    inx
-    cpx #8
-    bne CopyO
-
-    ldx #0
-CopyS:
     lda $D000 + $13 * 8,x
     sta S,x
-    inx
-    cpx #8
-    bne CopyS
-
-    ldx #0
-CopyK:
     lda $D000 + $0B * 8,x
     sta K,x
-    inx
-    cpx #8
-    bne CopyK
+    dex
+    bmi ByPass
+    jmp Copy
 
+ByPass:
     lda $01
     ora #%00000100 
     sta $01
