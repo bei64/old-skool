@@ -40,10 +40,10 @@ Copy:
     lda $D000 + $0B * 8,x
     sta K,x
     dex
-    bmi ByPass
+    bmi !+
     jmp Copy
 
-ByPass:
+!:
     lda $01
     ora #%00000100 
     sta $01
@@ -78,16 +78,16 @@ RowLoop:
     clc
     adc #40
     sta ScreenPointer
-    lda ScreenPointer + 1
-    adc #0
-    sta ScreenPointer + 1
+    bcc !+
+    inc ScreenPointer + 1
+!:
     lda ColorPointer
     clc
     adc #40
     sta ColorPointer
-    lda ColorPointer + 1
-    adc #0
-    sta ColorPointer + 1
+    bcc !+
+    inc ColorPointer + 1
+!:
     
     inx
     cpx #8
