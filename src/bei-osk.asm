@@ -96,8 +96,7 @@ RowLoop:
 
 Done:
 
-    ldy #0
-    ldx #0
+    ldx #$FF
 wblank:
     lda $d011
     bpl wblank
@@ -106,8 +105,7 @@ wblank2:
     bmi wblank2
 
 
-    inx
-    cpx #$FF
+    dex
     bne wblank
     lda $D020
     clc
