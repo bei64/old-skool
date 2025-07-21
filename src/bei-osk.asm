@@ -74,20 +74,8 @@ RowLoop:
     sta CurrentRow
     DrawLine(16, 13)
     
-    lda ScreenPointer
-    clc
-    adc #40
-    sta ScreenPointer
-    bcc !+
-    inc ScreenPointer + 1
-!:
-    lda ColorPointer
-    clc
-    adc #40
-    sta ColorPointer
-    bcc !+
-    inc ColorPointer + 1
-!:
+    NewLine(ScreenPointer)
+    NewLine(ColorPointer)
     
     inx
     cpx #8
@@ -119,7 +107,16 @@ wblank2:
 
     jmp Done
 
-
+.macro NewLine(addr) {
+    lda addr
+    clc
+    adc #40
+    sta addr
+    lda addr + 1
+    bcc !+
+    inc addr + 1
+!:
+}
 
 .macro DrawLine(offset, color) {
     ldy #0 + offset
