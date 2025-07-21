@@ -100,7 +100,7 @@ wblank2:
     adc #1
     and #$01
     tay
-    //and #1
+    
     lda Colors,y
     sta $D020
     sta $D021
@@ -112,7 +112,6 @@ wblank2:
     clc
     adc #40
     sta addr
-    lda addr + 1
     bcc !+
     inc addr + 1
 !:
@@ -121,9 +120,7 @@ wblank2:
 .macro DrawLine(offset, color) {
     ldy #0 + offset
 Loop:
-    lda CurrentRow
-    asl
-    sta CurrentRow
+    asl CurrentRow
     bcc !+
     lda #$A0
     sta (ScreenPointer),y
