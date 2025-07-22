@@ -158,7 +158,7 @@ OSK: {
 }
 
 Background: {
-    ColorTimer: .byte $00
+    ColorTimer: .byte $01
     Iteration: .byte $00
     Draw: {
             lda #$01
