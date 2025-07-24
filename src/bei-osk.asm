@@ -7,10 +7,14 @@ BasicUpstart2(Start)
 .label BackgroundPointer = $02
 .label BackgroundLine = $BF
 .label Temp = $70
+.label CurrentChar = $71
 .label ScreenPointer = $FB
 .label CurrentRow = $FD
 .label ColorPointer = $FE
 
+// 63
+CharCycle:  .byte $63, $77, $78, $E2, $F9, $EF, $A0 //$E4
+CharCycle2: .byte $E3, $F7, $F8, $62, $79, $6F, $64
 Colors: 
 		.byte $09,$0B
 BackgroundChars: 
@@ -25,6 +29,8 @@ Start:
     lda #LIGHT_GREY
     sta $D020
     sta $D021
+
+   
 
     jsr Background.Draw
 
@@ -52,13 +58,13 @@ Copy:
     sta $01
 
     jsr OSK.Draw
-    
+    jsr OSK.Reset
 Done:
 
-    :waitForRasterLine($FE)
-    :waitForRasterLine($FF)
+    :WaitForRasterLine($FE)
+    :WaitForRasterLine($FF)
     jsr Background.Color
-    
+    jsr OSK.Update
 
     jmp Done
 
@@ -71,10 +77,10 @@ Done:
     inc addr + 1
 !:
 }
-.macro waitForRasterLine( line ) {
-		lda #line
-		cmp $d012
-		bne *-3	
+.macro WaitForRasterLine( line ) {
+    lda #line
+    cmp $d012
+    bne *-3	
 }
 .macro DrawLine(offset, color) {
     ldy #0 + offset
@@ -92,14 +98,28 @@ Loop:
 }
 
 .macro ColorLine(offset, color) {
+        ldy #0 + offset
+    Loop:
+        asl CurrentRow
+        bcc !+
+        lda #$A0
+        sta (ScreenPointer),y
+        lda #color   
+        sta (ColorPointer),y
+    !:
+        iny
+        cpy #8 + offset
+        bne Loop
+}
+
+
+.macro UpdateLine(offset) {
     ldy #0 + offset
 Loop:
     asl CurrentRow
     bcc !+
-    lda #$A0
+    lda CurrentChar
     sta (ScreenPointer),y
-    lda #color   
-    sta (ColorPointer),y
 !:
     iny
     cpy #8 + offset
@@ -153,6 +173,88 @@ OSK: {
         jmp RowLoop
     !:
             
+        rts
+    }
+
+    Row: .byte $07
+    Char: .byte $00
+    Char2: .byte $00
+    RenderRow: .byte $00
+
+    Reset: {
+        lda #$20
+        sta ScreenPointer
+        lda #$05
+        sta ScreenPointer + 1
+        lda #0
+        sta Char
+        rts
+    }
+
+    Update: {
+        ldx RenderRow
+        ldy Char
+        lda CharCycle, y
+        sta CurrentChar
+        lda O, x
+        sta CurrentRow
+
+        UpdateLine(0)
+        lda S, x
+        sta CurrentRow
+        UpdateLine(8)
+        lda K,x
+        sta CurrentRow
+        UpdateLine(16)
+
+
+        ldx RenderRow
+        ldy Char
+        lda CharCycle2, y
+        sta CurrentChar
+
+        lda O + 1, x
+        sta CurrentRow
+        UpdateLine(40)
+        lda S + 1,x
+        sta CurrentRow
+        UpdateLine(48)
+        lda K + 1,x
+        sta CurrentRow
+        UpdateLine(56)
+
+        inc Char
+        lda Char
+        cmp #$07
+        bne DoneUpdate
+        lda #0
+        sta Char
+        
+        inc RenderRow
+        lda RenderRow
+        cmp #6
+        bne !+
+
+        lda #0
+        sta RenderRow
+        lda #$A0
+        sta CurrentChar
+
+        lda O + 1, x
+        sta CurrentRow
+        UpdateLine(40)
+        lda S + 1,x
+        sta CurrentRow
+        UpdateLine(48)
+        lda K + 1,x
+        sta CurrentRow
+        UpdateLine(56)
+        jsr Reset
+        jmp DoneUpdate
+    !:
+        
+        NewLine(ScreenPointer)
+    DoneUpdate:
         rts
     }
 }
