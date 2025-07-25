@@ -8,6 +8,10 @@ BasicUpstart2(Start)
 .label BackgroundLine = $BF
 .label Temp = $70
 .label CurrentChar = $71
+.label CurrentCharColor = $72
+.label CurrentCharColorO = $73
+.label CurrentCharColorS = $74
+.label CurrentCharColorK = $75
 .label ScreenPointer = $FB
 .label CurrentRow = $FD
 .label ColorPointer = $FE
@@ -15,8 +19,8 @@ BasicUpstart2(Start)
 // 63
 CharCycle:  .byte $63, $77, $78, $E2, $F9, $EF, $A0 //$E4
 CharCycle2: .byte $E3, $F7, $F8, $62, $79, $6F, $64
-Colors: 
-		.byte $09,$0B
+
+CharColors: .byte $05, $07, $02//, $04
 BackgroundChars: 
 		.byte $5F,$DF
 BackgroundColors: 
@@ -77,6 +81,18 @@ Done:
     inc addr + 1
 !:
 }
+
+.macro IncCharColor(addr) {
+    lda addr
+    clc
+    adc #1
+    cmp #3
+    bne !+
+    lda #0
+!:
+    sta addr
+}
+
 .macro WaitForRasterLine( line ) {
     lda #line
     cmp $d012
@@ -96,6 +112,25 @@ Loop:
     cpy #8 + offset
     bne Loop
 }
+.macro DrawLineAddr(offset, addr) {
+    ldy #0 + offset
+    txa
+    pha
+Loop:
+    asl CurrentRow
+    bcc !+
+    lda #$A0
+    sta (ScreenPointer),y
+    ldx addr
+    lda CharColors, x   
+    sta (ColorPointer),y
+!:
+    iny
+    cpy #8 + offset
+    bne Loop
+    pla
+    tax
+}
 
 .macro ColorLine(offset, color) {
         ldy #0 + offset
@@ -113,17 +148,25 @@ Loop:
 }
 
 
-.macro UpdateLine(offset) {
+.macro UpdateLine(offset,addr) {
     ldy #0 + offset
+    txa
+    pha
 Loop:
     asl CurrentRow
     bcc !+
     lda CurrentChar
     sta (ScreenPointer),y
+    
+    ldx addr
+    lda CharColors, x   
+    sta (ColorPointer),y
 !:
     iny
     cpy #8 + offset
     bne Loop
+    pla
+    tax
 }
 
 
@@ -139,6 +182,13 @@ OSK: {
         lda #$D9
         sta ColorPointer + 1
 
+        lda #0
+        sta CurrentCharColorO
+        lda #1
+        sta CurrentCharColorS
+        lda #2
+        sta CurrentCharColorK
+
         ldx #0
     RowLoop:
         lda O,x
@@ -146,7 +196,7 @@ OSK: {
         DrawLine(41, 11)
         lda O,x
         sta CurrentRow
-        DrawLine(0, 5)
+        DrawLineAddr(0, CurrentCharColorO)
 
 
         lda S,x
@@ -154,7 +204,7 @@ OSK: {
         DrawLine(49, 11)
         lda S,x
         sta CurrentRow
-        DrawLine(8, 7)
+        DrawLineAddr(8, CurrentCharColorS)
 
 
         lda K,x
@@ -162,7 +212,7 @@ OSK: {
         DrawLine(57, 11)
         lda K,x
         sta CurrentRow
-        DrawLine(16, 2)
+        DrawLineAddr(16, CurrentCharColorK)
         
         NewLine(ScreenPointer)
         NewLine(ColorPointer)
@@ -172,7 +222,6 @@ OSK: {
         beq !+
         jmp RowLoop
     !:
-            
         rts
     }
 
@@ -188,6 +237,17 @@ OSK: {
         sta ScreenPointer + 1
         lda #0
         sta Char
+
+        
+        
+        lda #$20
+        sta ColorPointer
+        lda #$D9
+        sta ColorPointer + 1
+        
+        IncCharColor(CurrentCharColorO)  
+        IncCharColor(CurrentCharColorS)  
+        IncCharColor(CurrentCharColorK) 
         rts
     }
 
@@ -199,13 +259,13 @@ OSK: {
         lda O, x
         sta CurrentRow
 
-        UpdateLine(0)
+        UpdateLine(0, CurrentCharColorO)
         lda S, x
         sta CurrentRow
-        UpdateLine(8)
+        UpdateLine(8, CurrentCharColorS)
         lda K,x
         sta CurrentRow
-        UpdateLine(16)
+        UpdateLine(16, CurrentCharColorK)
 
 
         ldx RenderRow
@@ -215,18 +275,20 @@ OSK: {
 
         lda O + 1, x
         sta CurrentRow
-        UpdateLine(40)
+        UpdateLine(40, CurrentCharColorK)
         lda S + 1,x
         sta CurrentRow
-        UpdateLine(48)
+        UpdateLine(48, CurrentCharColorO)
         lda K + 1,x
         sta CurrentRow
-        UpdateLine(56)
+        UpdateLine(56, CurrentCharColorS)
 
         inc Char
         lda Char
         cmp #$07
-        bne DoneUpdate
+        beq !+
+        jmp DoneUpdate
+    !:
         lda #0
         sta Char
         
@@ -242,18 +304,19 @@ OSK: {
 
         lda O + 1, x
         sta CurrentRow
-        UpdateLine(40)
+        UpdateLine(40, CurrentCharColorO)
         lda S + 1,x
         sta CurrentRow
-        UpdateLine(48)
+        UpdateLine(48, CurrentCharColorS)
         lda K + 1,x
         sta CurrentRow
-        UpdateLine(56)
+        UpdateLine(56, CurrentCharColorK)
         jsr Reset
         jmp DoneUpdate
     !:
         
         NewLine(ScreenPointer)
+        NewLine(ColorPointer)
     DoneUpdate:
         rts
     }
@@ -319,6 +382,11 @@ Background: {
             jmp Loop
         !:
             cmp #$07
+            bne !+
+            iny
+            jmp Loop
+        !:
+            cmp #$04
             bne !+
             iny
             jmp Loop
