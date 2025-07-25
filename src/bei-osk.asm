@@ -16,11 +16,10 @@ BasicUpstart2(Start)
 .label CurrentRow = $FD
 .label ColorPointer = $FE
 
-// 63
-CharCycle:  .byte $63, $77, $78, $E2, $F9, $EF, $A0 //$E4
+CharCycle:  .byte $63, $77, $78, $E2, $F9, $EF, $A0
 CharCycle2: .byte $E3, $F7, $F8, $62, $79, $6F, $64
 
-CharColors: .byte $05, $07, $02//, $04
+CharColors: .byte $05, $07, $02
 BackgroundChars: 
 		.byte $5F,$DF
 BackgroundColors: 
@@ -34,11 +33,7 @@ Start:
     sta $D020
     sta $D021
 
-   
-
     jsr Background.Draw
-
-
 
     lda $01
     and #%11111011    
@@ -66,7 +61,6 @@ Copy:
 Done:
 
     :WaitForRasterLine($FE)
-    :WaitForRasterLine($FF)
     jsr Background.Color
     jsr OSK.Update
 
@@ -152,13 +146,13 @@ Loop:
     ldy #0 + offset
     txa
     pha
+    ldx addr
 Loop:
     asl CurrentRow
     bcc !+
     lda CurrentChar
     sta (ScreenPointer),y
     
-    ldx addr
     lda CharColors, x   
     sta (ColorPointer),y
 !:
