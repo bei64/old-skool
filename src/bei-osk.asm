@@ -325,6 +325,7 @@ OSK: {
 Background: {
     ColorTimer: .byte $01
     Iteration: .byte $00
+    SkipTable: .byte 0,0,1,0,0,1,0,1,0,0,0,1,0,0,0,0
     Draw: {
             lda #$01
             sta BackgroundPointer
@@ -371,31 +372,13 @@ Background: {
         Loop:
             lda (BackgroundPointer),y
             and #$0F
-            cmp #$0B
-            bne !+
+            tax
+            lda SkipTable, x
+            beq !+
             iny
             jmp Loop
         !:
-            cmp #$05
-            bne !+
-            iny
-            jmp Loop
-        !:
-            cmp #$07
-            bne !+
-            iny
-            jmp Loop
-        !:
-            cmp #$04
-            bne !+
-            iny
-            jmp Loop
-        !:
-            cmp #$02
-            bne !+
-            iny
-            jmp Loop
-        !:
+            
             tya
             clc
             adc #1
