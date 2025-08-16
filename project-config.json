@@ -1,9 +1,9 @@
 {
-    "name": "bei-spiral",
+    "name": "bei-game",
     "description": "Project old-skool (Workspace)",
     "toolkit": "kick",
     "sources": [
-        "src/bei-osk.asm"
+        "src/game.asm"
     ],
     "build": "debug",
     "definitions": [],
