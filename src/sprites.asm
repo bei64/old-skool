@@ -20,6 +20,7 @@ SPRITES: {
     PlayerState: .byte $00
     PlayerShooting: .byte $00
     BulletDirection: .byte $00
+    EnemyDirection: .byte $00
 
     
     SpriteMSB:  .fill 8,0 
@@ -315,6 +316,11 @@ SPRITES: {
         jmp !Done+
 
     !Done:
+        rts
+    }
+
+
+    HandleEnemy: {
         rts
     }
 }

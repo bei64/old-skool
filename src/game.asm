@@ -76,6 +76,9 @@ GameLoop:
     lda #GREEN
     sta VIC.BORDER_COLOR
     jsr SPRITES.BulletMove
+    lda #BROWN
+    sta VIC.BORDER_COLOR
+    jsr SPRITES.HandleEnemy
 
     lda #RED
     sta VIC.BORDER_COLOR
@@ -86,6 +89,7 @@ GameLoop:
 * = $5000 "Player Sprites"
 		.import binary "../assets/Player.bin"
 		.import binary "../assets/Bullet.bin"
+		.import binary "../assets/Enemy.bin"
 
 * = $2000 "Map data"
     MAP_TILES:
