@@ -1,3 +1,17 @@
+// TODO:
+// - MSB is messed up for enemy and bullet sprites
+// - Add a proper game over screen
+// - Add a title screen
+// - Add a proper start screen
+// - Bullet collision with enemies
+// - Enemy collision with player
+// - Sound effects
+// - Score system
+// - Add more enemies
+// - Juice up the graphics
+
+
+
 BasicUpstart2(Start)
 
 

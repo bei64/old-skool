@@ -11,7 +11,7 @@ SPRITES: {
 	.label JOY_RT = %01000
 	.label JOY_FR = %10000
 
-
+    .label DIR_NONE = 0
     .label DIR_UP = 1
     .label DIR_DOWN = 2
     .label DIR_LEFT = 3
@@ -46,7 +46,7 @@ SPRITES: {
         sta VIC.SPRITE_ENABLE
 
         lda VIC.SPRITE_MULTICOLOR
-        ora #%00000011
+        ora #%00000111
         sta VIC.SPRITE_MULTICOLOR
 
         lda #$A8
@@ -321,6 +321,165 @@ SPRITES: {
 
 
     HandleEnemy: {
+        lda EnemyDirection
+        bne !+
+        jsr SpawnEnemy
+    !:
+        cmp #DIR_UP
+        beq !MoveUp+
+        cmp #DIR_DOWN
+        beq !MoveDown+
+        cmp #DIR_LEFT
+        beq !MoveLeft+
+        cmp #DIR_RIGHT
+        beq !MoveRight+
+
+    !MoveUp:
+        lda VIC.SPRITE_2_Y
+        sec
+        sbc #$01
+        sta VIC.SPRITE_2_Y
+        cmp #$90
+        bne !Done+
+        lda #DIR_NONE
+        sta EnemyDirection
+        lda VIC.SPRITE_ENABLE 
+        and #%11111011
+        sta VIC.SPRITE_ENABLE
+        jmp !Done+
+    !MoveDown:
+        lda VIC.SPRITE_2_Y
+        clc
+        adc #$01
+        sta VIC.SPRITE_2_Y
+        cmp #$84
+        bne !Done+
+        lda #DIR_NONE
+        sta EnemyDirection
+        lda VIC.SPRITE_ENABLE 
+        and #%11111011
+        sta VIC.SPRITE_ENABLE
+        jmp !Done+
+    !MoveLeft:
+        lda VIC.SPRITE_2_X
+        clc
+        adc #$01
+        sta VIC.SPRITE_2_X
+        cmp #$9C
+        bne !Done+
+        lda #DIR_NONE
+        sta EnemyDirection
+        lda VIC.SPRITE_ENABLE 
+        and #%11111011
+        sta VIC.SPRITE_ENABLE
+        jmp !Done+
+    !MoveRight:
+        lda VIC.SPRITE_2_X
+        sec
+        sbc #$01
+        sta VIC.SPRITE_2_X
+        bcs !+
+        ldx #2
+        jsr MSBSetter
+    !:
+        lda VIC.SPRITE_2_X
+        cmp #$AC
+        bne !Done+
+        
+        lda #DIR_NONE
+        sta EnemyDirection
+        lda VIC.SPRITE_ENABLE 
+        and #%11111011
+        sta VIC.SPRITE_ENABLE
+        jmp !Done+
+
+    !Done:
+        rts
+    }
+
+    SpawnEnemy: {
+        jsr Random
+		and #%00000011
+        cmp #0
+        beq !SpawnUp+
+        cmp #1
+        beq !SpawnDown+
+        cmp #2
+        beq !SpawnLeft+
+        cmp #3
+        beq !SpawnRight+
+        jmp !Done+
+    !SpawnUp:
+        lda #DIR_UP
+        sta EnemyDirection
+        
+        lda #$46
+        sta SPRITE_POINTERS + 2
+        
+        lda VIC.SPRITE_ENABLE 
+        ora #%00000100
+        sta VIC.SPRITE_ENABLE
+
+        lda #$A8
+        sta VIC.SPRITE_2_X
+        
+        lda #$FF
+        sta VIC.SPRITE_2_Y
+        jmp !Done+
+
+    !SpawnDown:
+        lda #DIR_DOWN
+        sta EnemyDirection
+        
+        lda #$46
+        sta SPRITE_POINTERS + 2
+        
+        lda VIC.SPRITE_ENABLE 
+        ora #%00000100
+        sta VIC.SPRITE_ENABLE
+
+        lda #$A8
+        sta VIC.SPRITE_2_X
+        
+        lda #$00
+        sta VIC.SPRITE_2_Y
+        jmp !Done+
+    !SpawnLeft:
+        lda #DIR_LEFT
+        sta EnemyDirection
+        
+        lda #$46
+        sta SPRITE_POINTERS + 2
+        
+        lda VIC.SPRITE_ENABLE 
+        ora #%00000100
+        sta VIC.SPRITE_ENABLE
+
+        lda #$00
+        sta VIC.SPRITE_2_X
+        
+        lda #$88
+        sta VIC.SPRITE_2_Y
+        jmp !Done+
+    !SpawnRight:
+        lda #DIR_RIGHT
+        sta EnemyDirection
+        
+        lda #$46
+        sta SPRITE_POINTERS + 2
+        
+        lda VIC.SPRITE_ENABLE 
+        ora #%00000100
+        sta VIC.SPRITE_ENABLE
+        ldx #2
+        jsr MSBSetter
+        lda #$45
+        sta VIC.SPRITE_2_X
+        
+        lda #$88
+        sta VIC.SPRITE_2_Y
+        jmp !Done+
+    !Done:
         rts
     }
 }
