@@ -1,13 +1,8 @@
 // TODO:
-// - MSB is messed up for enemy and bullet sprites
 // - Add a proper game over screen
 // - Add a title screen
 // - Add a proper start screen
-// - Bullet collision with enemies
-// - Enemy collision with player
-// - Sound effects
 // - Score system
-// - Add more enemies
 // - Juice up the graphics
 
 
@@ -22,6 +17,7 @@ BasicUpstart2(Start)
 
 #import "map_loader.asm"
 #import "sprites.asm"
+#import "sound.asm"
 
 
 .label SCREEN_RAM = $4000
@@ -79,6 +75,7 @@ Start:
 
     jsr MAPLOADER.DrawMap
     jsr SPRITES.Init
+    jsr SOUND.Init
     
 GameLoop:
     :WaitForRasterLine($FF)
@@ -93,6 +90,9 @@ GameLoop:
     lda #BROWN
     sta VIC.BORDER_COLOR
     jsr SPRITES.HandleEnemy
+    lda #YELLOW
+    sta VIC.BORDER_COLOR
+    jsr SPRITES.CheckHit
 
     lda #RED
     sta VIC.BORDER_COLOR

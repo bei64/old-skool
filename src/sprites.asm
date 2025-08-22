@@ -37,9 +37,11 @@ SPRITES: {
 
         lda #CYAN
         sta VIC.SPRITE_COLOR_1
+        
+        lda #YELLOW
+        sta VIC.SPRITE_COLOR_2
         lda #$40
         sta SPRITE_POINTERS
-        //sta SPRITE_POINTERS + 1
 
         lda VIC.SPRITE_ENABLE 
         ora #%00000001
@@ -112,6 +114,7 @@ SPRITES: {
         jsr MSBSetter
         lda #0
         sta PlayerShooting
+        sta BulletDirection
         lda VIC.SPRITE_ENABLE 
         and #%11111101
         sta VIC.SPRITE_ENABLE
@@ -125,6 +128,7 @@ SPRITES: {
         bne !Done+
         lda #0
         sta PlayerShooting
+        sta BulletDirection
         lda VIC.SPRITE_ENABLE 
         and #%11111101
         sta VIC.SPRITE_ENABLE
@@ -138,6 +142,7 @@ SPRITES: {
         bne !Done+
         lda #0
         sta PlayerShooting
+        sta BulletDirection
         lda VIC.SPRITE_ENABLE 
         and #%11111101
         sta VIC.SPRITE_ENABLE
@@ -152,6 +157,7 @@ SPRITES: {
         bne !Done+
         lda #0
         sta PlayerShooting
+        sta BulletDirection
         lda VIC.SPRITE_ENABLE 
         and #%11111101
         sta VIC.SPRITE_ENABLE
@@ -251,6 +257,8 @@ SPRITES: {
         
         lda #$88
         sta VIC.SPRITE_1_Y
+
+        jsr SOUND.Shoot
 
         
         jmp !Up+
@@ -415,6 +423,7 @@ SPRITES: {
         
         lda #$46
         sta SPRITE_POINTERS + 2
+        jsr SOUND.SpawnUp
         
         lda VIC.SPRITE_ENABLE 
         ora #%00000100
@@ -431,9 +440,8 @@ SPRITES: {
         lda #DIR_DOWN
         sta EnemyDirection
         
-        lda #$46
+        lda #$47
         sta SPRITE_POINTERS + 2
-        
         lda VIC.SPRITE_ENABLE 
         ora #%00000100
         sta VIC.SPRITE_ENABLE
@@ -441,21 +449,21 @@ SPRITES: {
         lda #$A8
         sta VIC.SPRITE_2_X
         
-        lda #$00
+        lda #$38
         sta VIC.SPRITE_2_Y
         jmp !Done+
     !SpawnLeft:
         lda #DIR_LEFT
         sta EnemyDirection
         
-        lda #$46
+        lda #$49
         sta SPRITE_POINTERS + 2
-        
+        jsr SOUND.SpawnLeft
         lda VIC.SPRITE_ENABLE 
         ora #%00000100
         sta VIC.SPRITE_ENABLE
 
-        lda #$00
+        lda #$51
         sta VIC.SPRITE_2_X
         
         lda #$88
@@ -465,20 +473,79 @@ SPRITES: {
         lda #DIR_RIGHT
         sta EnemyDirection
         
-        lda #$46
+        lda #$48
         sta SPRITE_POINTERS + 2
-        
+        jsr SOUND.SpawnRight
         lda VIC.SPRITE_ENABLE 
         ora #%00000100
         sta VIC.SPRITE_ENABLE
-        ldx #2
-        jsr MSBSetter
-        lda #$45
+        //ldx #2
+        //jsr MSBSetter
+        lda #$FF
         sta VIC.SPRITE_2_X
         
         lda #$88
         sta VIC.SPRITE_2_Y
         jmp !Done+
+    !Done:
+        rts
+    }
+
+    CheckHit: {
+        lda BulletDirection
+        beq !Done+
+        
+        cmp #DIR_UP
+        beq !CheckUp+
+        cmp #DIR_DOWN
+        beq !CheckDown+
+        cmp #DIR_LEFT
+        beq !CheckLeft+
+        cmp #DIR_RIGHT
+        beq !CheckRight+
+
+        jmp !Done+
+
+    !CheckUp:
+        lda EnemyDirection
+        cmp #DIR_DOWN
+        bne !Done+
+        lda VIC.SPRITE_1_Y
+        cmp VIC.SPRITE_2_Y
+        bcs !Done+
+        jmp !Hit+
+    !CheckDown:
+        lda EnemyDirection
+        cmp #DIR_UP
+        bne !Done+
+        lda VIC.SPRITE_1_Y
+        cmp VIC.SPRITE_2_Y
+        bcc !Done+
+        jmp !Hit+
+    !CheckLeft:
+        lda EnemyDirection
+        cmp #DIR_LEFT
+        bne !Done+
+        lda VIC.SPRITE_1_X
+        cmp VIC.SPRITE_2_X
+        bcs !Done+
+        jmp !Hit+
+    !CheckRight:
+        lda EnemyDirection
+        cmp #DIR_RIGHT
+        bne !Done+
+        lda VIC.SPRITE_1_X
+        cmp VIC.SPRITE_2_X
+        bcc !Done+
+        jmp !Hit+
+    !Hit:
+        lda #DIR_NONE
+        sta EnemyDirection
+        sta BulletDirection
+        sta PlayerShooting
+        lda VIC.SPRITE_ENABLE
+        and #%11111001
+        sta VIC.SPRITE_ENABLE
     !Done:
         rts
     }

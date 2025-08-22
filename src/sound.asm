@@ -1,15 +1,15 @@
 
-BasicUpstart2(start)
-
-start:
-    jsr sound.init
-    jsr sound.Blip
-    ldx #$ff
-delay: dex
-    bne delay
-    jsr sound.Hit
-    rts
-sound:
+//BasicUpstart2(start)
+//
+//start:
+//    jsr sound.init
+//    jsr sound.Blip
+//    ldx #$ff
+//delay: dex
+//    bne delay
+//    jsr sound.Hit
+//    rts
+SOUND:
 {
 //    7	      6	        5	        4	     3	            2	1	0
 //  noise	pulse	sawtooth	triangle	test	ring modulation with voice 3	synchronize with voice 3	gate
@@ -40,7 +40,7 @@ sound:
 .const Filter3   =   $d417   //  (54295)   filter resonance and routing
 .const VOL       =   $d418   //  (54296)   filter mode and main volume control
 
-init:
+Init:
     {
         
         ldx #18
@@ -85,7 +85,81 @@ Hit:
         sta V1AttDec
         rts
     }
-Blip:
+Shoot:
+    {
+        lda #$0f
+        sta VOL
+        lda #129
+        sta V2Voice
+        lda #8
+        sta V2AttDec
+        lda #8
+        sta V2SusRel
+        lda #40
+        sta V2FreqHi
+        lda #200
+        sta V2FreqLo
+        lda #33
+        sta V2Voice
+        ldy #64
+    delay:
+        dey
+        bne delay
+        lda #16
+        sta V2Voice
+        rts 
+    }
+SpawnLeft:
+    {
+        lda #$0f
+        sta VOL
+        lda #129
+        sta V1Voice
+        lda #8
+        sta V1AttDec
+        lda #8
+        sta V1SusRel
+        lda #20
+        sta V1FreqHi
+        lda Tone: #25
+        sta V1FreqLo
+        ldy #64
+    delay:
+        dey
+        bne delay
+        lda #32
+        sta V1Voice
+        //lda Tone
+        //eor #54
+        //sta Tone
+        rts 
+    }
+SpawnRight:
+    {
+        lda #$0f
+        sta VOL
+        lda #129
+        sta V1Voice
+        lda #8
+        sta V1AttDec
+        lda #8
+        sta V1SusRel
+        lda #30
+        sta V1FreqHi
+        lda #45
+        sta V1FreqLo
+        ldy #64
+    delay:
+        dey
+        bne delay
+        lda #32
+        sta V1Voice
+        //lda Tone
+        //eor #54
+        //sta Tone
+        rts 
+    }
+SpawnUp:
     {
         lda #$0f
         sta VOL
@@ -97,19 +171,17 @@ Blip:
         sta V1SusRel
         lda #40
         sta V1FreqHi
-        lda Tone: #200
+        lda #35
         sta V1FreqLo
-        lda #33
-        sta V1Voice
         ldy #64
     delay:
         dey
         bne delay
         lda #32
         sta V1Voice
-        lda Tone
-        eor #201
-        sta Tone
+        //lda Tone
+        //eor #54
+        //sta Tone
         rts 
     }
 }
